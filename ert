@@ -1,0 +1,854 @@
+MAVEN + GIT/GITHUB + DOCKER REFERENCE COMMANDS
+================================================
+
+IMPORTANT
+---------
+Run Git and Docker commands from Git Bash unless stated otherwise.
+
+Replace these placeholders with YOUR values:
+- <PROJECT_PATH> = the folder where your project is stored.
+- <GITHUB_USERNAME> = the GitHub account that owns the repository.
+- <GITHUB_REPO> = the GitHub repository name.
+- <GITHUB_REPO_URL> = the repository URL.
+- <DOCKER_USERNAME> = your Docker Hub username.
+- <DOCKER_REPO> = your Docker Hub repository name.
+- <PROJECT_NAME> = your project folder name.
+- <WAR_NAME> = the WAR file name inside target/.
+- <BRANCH_NAME> = the branch you want to create/use.
+
+EXAMPLE PATH USED IN THIS PRACTICAL
+------------------------------------
+Git Bash:
+    ~/git/Lab-Internal-1-LMS
+
+Windows equivalent:
+    C:\Users\sathw\git\Lab-Internal-1-LMS
+
+If your project is somewhere else, use YOUR actual project path.
+
+================================================
+PART 1 — CREATE / CHECK A MAVEN WEB PROJECT
+================================================
+
+1. Go to the Maven project folder.
+
+Git Bash:
+    cd ~/git/<PROJECT_NAME>
+
+Example:
+    cd ~/git/Lab-Internal-1-LMS
+
+2. Check the project files:
+    ls
+
+You should normally see:
+    pom.xml
+    src/
+    target/        (after Maven build)
+    Dockerfile     (after creating Dockerfile)
+
+3. Build the Maven project:
+    mvn clean package
+
+For a web project, this should create:
+    target/<WAR_NAME>.war
+
+Example:
+    target/LMS.war
+
+4. Check the generated WAR:
+    ls target
+
+================================================
+PART 2 — MAVEN COMPILER PLUGIN (JAVA 17)
+================================================
+
+Inside pom.xml, put this inside <build>:
+
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.13.0</version>
+            <configuration>
+                <source>17</source>
+                <target>17</target>
+            </configuration>
+        </plugin>
+    </plugins>
+
+Then build:
+    mvn clean package
+
+================================================
+PART 3 — GIT INITIALIZATION
+================================================
+
+1. Go to the PROJECT ROOT.
+   This means the folder containing pom.xml.
+
+    cd ~/git/<PROJECT_NAME>
+
+2. Initialize Git:
+    git init
+
+3. Set Git name:
+    git config --global user.name "YOUR_NAME"
+
+Example:
+    git config --global user.name "li"
+
+4. Set Git email:
+    git config --global user.email "YOUR_EMAIL"
+
+Example:
+    git config --global user.email "shyambharjee@gmail.com"
+
+NOTE:
+The correct command is:
+    git config --global user.name "li"
+
+NOT:
+    git --global user.name "li"
+
+5. Check the identity:
+    git config --global user.name
+    git config --global user.email
+
+================================================
+PART 4 — .gitignore
+================================================
+
+Create a file named exactly:
+
+    .gitignore
+
+LOCATION:
+    PROJECT ROOT
+    (same folder where pom.xml is present)
+
+For the question paper, the .gitignore MUST contain exactly these entries:
+
+    .env
+    node_modules/
+    target/
+
+Do NOT replace these with placeholder/example names.
+
+Meaning:
+    .env            -> ignores .env files
+    node_modules/   -> ignores the node_modules directory
+    target/         -> ignores Maven's target directory
+
+Then run:
+
+    git status
+    git add .gitignore
+    git commit -m "Add gitignore"
+
+IMPORTANT:
+If target/ was already committed before .gitignore was created, Git will continue
+tracking it. To remove target/ from Git tracking while keeping it on your computer:
+
+    git rm -r --cached target/
+    git add .gitignore
+    git commit -m "Ignore generated files"
+
+Then:
+    git status
+    git add .
+    git commit -m "Initial commit"
+
+IMPORTANT:
+If target/ was already committed before adding it to .gitignore,
+.gitignore alone will not remove it from Git tracking.
+
+To stop tracking target/ while keeping it on your computer:
+    git rm -r --cached target/
+    git add .gitignore
+    git commit -m "Ignore generated files"
+
+================================================
+PART 5 — FIRST GITHUB CONNECTION
+================================================
+
+OPTION A — HTTPS (recommended if you have not configured SSH)
+
+1. Check whether a remote already exists:
+    git remote -v
+
+2. If NO origin exists:
+    git remote add origin https://github.com/<GITHUB_USERNAME>/<GITHUB_REPO>.git
+
+Example:
+    git remote add origin https://github.com/VANDANAPUSATHWIKHSAI/cn1.git
+
+3. If origin ALREADY EXISTS, DO NOT run "git remote add origin" again.
+   You will get:
+       error: remote origin already exists.
+
+Instead, change it:
+    git remote set-url origin https://github.com/<GITHUB_USERNAME>/<GITHUB_REPO>.git
+
+4. Verify:
+    git remote -v
+
+It should show the repository you actually want to use.
+
+5. Rename the local branch to main:
+    git branch -M main
+
+6. Push:
+    git push -u origin main
+
+FIRST PUSH / TWO GITHUB ACCOUNTS:
+If Git uses the wrong saved GitHub account and gives a 403 such as:
+    Permission to OWNER/REPO.git denied to WRONG_USERNAME.
+
+Remove the old GitHub credentials from:
+    Control Panel
+    -> Credential Manager
+    -> Windows Credentials
+
+Remove the saved GitHub credential, then run:
+    git push -u origin main
+
+Sign in with the GitHub account that OWNS the target repository or has
+permission to push to it.
+
+IMPORTANT:
+Git's:
+    git config user.name
+    git config user.email
+and the GitHub account used to authenticate are separate things.
+
+================================================
+PART 6 — SSH GITHUB CONNECTION
+================================================
+
+If the exam specifically asks for SSH:
+
+Remote format:
+    git@github.com:<GITHUB_USERNAME>/<GITHUB_REPO>.git
+
+If origin does not exist:
+    git remote add origin git@github.com:<GITHUB_USERNAME>/<GITHUB_REPO>.git
+
+If origin already exists:
+    git remote set-url origin git@github.com:<GITHUB_USERNAME>/<GITHUB_REPO>.git
+
+Check:
+    git remote -v
+
+Then:
+    git branch -M main
+    git push -u origin main
+
+If you get:
+    git@github.com: Permission denied (publickey).
+
+SSH is not configured for that GitHub account on that laptop.
+
+For a simple setup, switch the remote to HTTPS:
+    git remote set-url origin https://github.com/<GITHUB_USERNAME>/<GITHUB_REPO>.git
+
+Then:
+    git push -u origin main
+
+================================================
+PART 7 — COMMON GIT PUSH ERRORS WE ENCOUNTERED
+================================================
+
+ERROR:
+    error: src refspec main does not match any
+
+CAUSE:
+    Local branch was still called master or there was no main branch.
+
+FIX:
+    git branch -M main
+    git push -u origin main
+
+ERROR:
+    error: remote origin already exists.
+
+CAUSE:
+    origin is already configured.
+
+FIX:
+    git remote -v
+
+If it is the WRONG repository:
+    git remote set-url origin <CORRECT_REPOSITORY_URL>
+
+Do NOT use:
+    git remote add origin ...
+again.
+
+ERROR:
+    Permission to <owner>/<repo>.git denied to <another-account>.
+
+CAUSE:
+    GitHub authenticated with another account.
+
+FIX:
+    Remove the old GitHub credential from Windows Credential Manager,
+    then push again and authenticate with the account that owns/has access
+    to the repository.
+
+ERROR:
+    git@github.com: Permission denied (publickey).
+
+CAUSE:
+    SSH key is missing/not configured for the GitHub account.
+
+FIX:
+    Either configure SSH properly, OR use HTTPS:
+    git remote set-url origin https://github.com/<USERNAME>/<REPO>.git
+
+================================================
+PART 8 — GIT BASIC COMMANDS FROM THE EXAM
+================================================
+
+Check status:
+    git status
+
+Add one file:
+    git add <FILE_NAME>
+
+Add everything:
+    git add .
+
+Commit:
+    git commit -m "MESSAGE"
+
+Compact history:
+    git log --oneline
+
+Change the last commit message BEFORE pushing:
+    git commit --amend -m "Correct message"
+
+Create and switch to a branch:
+    git switch -c feature/login
+
+Push a new branch:
+    git push -u origin feature/login
+
+Switch branch:
+    git switch main
+
+================================================
+PART 9 — GIT STASH
+================================================
+
+Temporarily save uncommitted changes:
+    git stash
+
+Switch branch:
+    git switch main
+
+Restore the saved changes:
+    git stash pop
+
+Useful check:
+    git status
+
+================================================
+PART 10 — UNSTAGE A FILE WITHOUT LOSING EDITS
+================================================
+
+If app.js was staged but you want to keep your edits:
+
+    git restore --staged app.js
+
+Your edits remain in app.js.
+
+Check:
+    git status
+
+================================================
+PART 11 — MERGE CONFLICT
+================================================
+
+Example:
+    git switch main
+    git merge feature/signup
+
+If Git reports a conflict:
+
+1. Check conflicted files:
+    git status
+
+2. Open the conflicted file.
+
+You may see markers like:
+    <<<<<<< HEAD
+    main version
+    =======
+    feature version
+    >>>>>>> feature/signup
+
+3. Edit the file and keep the correct code.
+4. Remove all conflict markers.
+5. Stage the resolved file:
+    git add app.js
+
+6. Complete the merge:
+    git commit -m "Resolve merge conflict"
+
+7. Push:
+    git push
+
+================================================
+PART 12 — SAFELY UNDO A PUSHED COMMIT
+================================================
+
+If the unwanted commit has already been pushed and you do NOT want
+to rewrite Git history:
+
+    git revert HEAD
+
+Then push the new revert commit:
+    git push
+
+This creates a new commit that reverses the unwanted change.
+
+================================================
+PART 13 — PATCH FILE INTEGRATION
+================================================
+
+Assume the patch file is located at:
+
+    C:\Users\sathw\Downloads\fix.patch
+
+In Git Bash, that is approximately:
+
+    ~/Downloads/fix.patch
+
+1. Go to the PROJECT ROOT:
+    cd ~/git/<PROJECT_NAME>
+
+2. Apply the patch:
+    git apply ~/Downloads/fix.patch
+
+3. Check for conflicts/errors.
+   If git apply reports an error, inspect the affected files.
+
+4. Check what changed:
+    git status
+    git diff
+
+5. Build:
+    mvn clean package
+
+6. Commit:
+    git add .
+    git commit -m "Apply bug fix patch"
+
+7. Push if required:
+    git push
+
+================================================
+PART 14 — MULTI-MODULE MAVEN
+================================================
+
+Typical structure:
+
+    parent-project/
+    |-- pom.xml
+    |-- library-core/
+    |   `-- pom.xml
+    `-- library-web/
+        `-- pom.xml
+
+Parent pom.xml contains:
+
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>library-core</module>
+        <module>library-web</module>
+    </modules>
+
+library-web depends on library-core by adding a dependency:
+
+    <dependency>
+        <groupId>com.library</groupId>
+        <artifactId>library-core</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+Build all modules from the PARENT PROJECT ROOT:
+    mvn clean package
+
+Build order:
+    library-core
+    then library-web
+
+Because library-web depends on library-core, Maven builds library-core first.
+
+================================================
+PART 15 — DOCKERFILE FOR THIS MAVEN WEB PROJECT
+================================================
+
+For a Tomcat 9 + javax.servlet WAR project:
+
+Dockerfile:
+
+    FROM tomcat:9.0
+
+    COPY target/LMS.war /usr/local/tomcat/webapps/ROOT.war
+
+    EXPOSE 8080
+
+    CMD ["catalina.sh", "run"]
+
+IMPORTANT:
+    target/LMS.war
+is the path on your PROJECT MACHINE.
+
+    /usr/local/tomcat/webapps/ROOT.war
+is the path INSIDE THE DOCKER CONTAINER.
+
+You do NOT need to create /usr/local/tomcat yourself.
+
+The Tomcat image provides that directory.
+
+If your WAR has another name, replace LMS.war:
+    COPY target/<WAR_NAME>.war /usr/local/tomcat/webapps/ROOT.war
+
+If you copy it as ROOT.war, access the application at:
+    http://localhost:<HOST_PORT>/
+
+If you copy it as LMS.war, the context path is normally:
+    http://localhost:<HOST_PORT>/LMS/
+
+================================================
+PART 16 — DOCKER BUILD
+================================================
+
+Go to the folder containing:
+    Dockerfile
+    pom.xml
+    target/<WAR_NAME>.war
+
+Example:
+    cd ~/git/Lab-Internal-1-LMS
+
+Build:
+    docker build -t lms-app .
+
+Check images:
+    docker images
+
+IMPORTANT:
+The file must be named exactly:
+    Dockerfile
+
+NOT:
+    DockerFile
+
+NOT:
+    Dockerfile.txt
+
+If Docker says:
+    failed to read dockerfile: open Dockerfile: no such file or directory
+
+Run:
+    ls
+
+and make sure Dockerfile is present.
+
+================================================
+PART 17 — RUN TOMCAT CONTAINER
+================================================
+
+For the lab requirement HOST PORT 7070 -> CONTAINER PORT 8080:
+
+    docker run -d -p 7070:8080 --name lms-container lms-app
+
+Check:
+    docker ps
+
+Open:
+    http://localhost:7070/
+
+If using a non-ROOT WAR:
+    http://localhost:7070/<WAR_CONTEXT_PATH>/
+
+Example:
+    http://localhost:7070/LMS/
+
+================================================
+PART 18 — DOCKER PORT CONFLICT
+================================================
+
+If you get an error that port 7070 or 8080 is already in use:
+
+Check containers:
+    docker ps
+
+Remove an old container if necessary:
+    docker rm -f lms-container
+
+Use another host port, for example 7071:
+    docker run -d -p 7071:8080 --name lms-container lms-app
+
+Then open:
+    http://localhost:7071/
+
+Remember:
+    HOST:CONTAINER
+
+    7071:8080
+means:
+    laptop port 7071 -> Tomcat inside container port 8080
+
+The container's Tomcat port remains 8080.
+
+================================================
+PART 19 — DOCKER CONTAINER COMMANDS
+================================================
+
+List running containers:
+    docker ps
+
+List all containers:
+    docker ps -a
+
+Stop:
+    docker stop lms-container
+
+Start:
+    docker start lms-container
+
+Remove:
+    docker rm lms-container
+
+Force remove:
+    docker rm -f lms-container
+
+View logs:
+    docker logs lms-container
+
+Follow logs:
+    docker logs -f lms-container
+
+================================================
+PART 20 — DOCKER HUB
+================================================
+
+Docker Hub username for this example:
+    sathwikhsai08
+
+Login:
+    docker login
+
+Tag local image:
+    docker tag lms-app sathwikhsai08/lms-app:latest
+
+General format:
+    docker tag <LOCAL_IMAGE> <DOCKER_USERNAME>/<DOCKER_REPO>:<TAG>
+
+Check:
+    docker images
+
+Push:
+    docker push sathwikhsai08/lms-app:latest
+
+General format:
+    docker push <DOCKER_USERNAME>/<DOCKER_REPO>:<TAG>
+
+Docker Hub repository:
+    sathwikhsai08/lms-app
+
+IMPORTANT:
+Create/check the repository in Docker Hub and make it PUBLIC if the lab
+requires a publicly available image.
+
+================================================
+PART 21 — COMPLETE WEB PROJECT WORKFLOW
+================================================
+
+Use this order for a NEW Maven web project.
+
+1. Go to project:
+    cd ~/git/<PROJECT_NAME>
+
+2. Check:
+    ls
+
+3. Build Maven:
+    mvn clean package
+
+4. Check WAR:
+    ls target
+
+5. Create Dockerfile in PROJECT ROOT.
+
+6. Dockerfile:
+    FROM tomcat:9.0
+    COPY target/<WAR_NAME>.war /usr/local/tomcat/webapps/ROOT.war
+    EXPOSE 8080
+    CMD ["catalina.sh", "run"]
+
+7. Build image:
+    docker build -t lms-app .
+
+8. Run container:
+    docker run -d -p 7070:8080 --name lms-container lms-app
+
+9. Verify:
+    docker ps
+
+10. Browser:
+    http://localhost:7070/
+
+11. Login to Docker Hub:
+    docker login
+
+12. Tag:
+    docker tag lms-app <DOCKER_USERNAME>/lms-app:latest
+
+13. Push:
+    docker push <DOCKER_USERNAME>/lms-app:latest
+
+================================================
+PART 22 — IF PROJECT IS CLONED FROM GITHUB
+================================================
+
+If the repository is already on GitHub:
+
+    cd ~/git
+
+Clone:
+    git clone https://github.com/<GITHUB_USERNAME>/<GITHUB_REPO>.git
+
+Enter:
+    cd <GITHUB_REPO>
+
+Check:
+    ls
+
+You should see:
+    pom.xml
+    src/
+    etc.
+
+Build:
+    mvn clean package
+
+IMPORTANT:
+Do NOT run "git init" after cloning.
+The clone already contains the Git repository.
+
+Do NOT run:
+    git remote add origin ...
+
+after cloning.
+The clone already creates origin.
+
+Check:
+    git remote -v
+
+================================================
+PART 23 — IMPORTANT PATH RULE
+================================================
+
+Always distinguish these paths:
+
+1. PROJECT ROOT:
+   The folder containing pom.xml.
+
+   Example:
+   ~/git/Lab-Internal-1-LMS
+
+2. MAVEN OUTPUT:
+   Inside the project:
+   target/LMS.war
+
+3. DOCKERFILE:
+   Inside the PROJECT ROOT:
+   Dockerfile
+
+4. DOCKER INTERNAL TOMCAT PATH:
+   /usr/local/tomcat/webapps/
+
+5. WINDOWS PATH EXAMPLE:
+   C:\Users\sathw\git\Lab-Internal-1-LMS
+
+If your project is somewhere else, replace the Windows/Git Bash path with
+your actual project location.
+
+================================================
+PART 24 — QUICK EXAM COMMAND LIST
+================================================
+
+Maven:
+    mvn clean
+    mvn compile
+    mvn test
+    mvn package
+    mvn clean package
+
+Git:
+    git init
+    git status
+    git add .
+    git commit -m "MESSAGE"
+    git log --oneline
+    git branch -M main
+    git switch -c feature/login
+    git switch main
+    git stash
+    git stash pop
+    git restore --staged app.js
+    git merge feature/signup
+    git revert HEAD
+    git remote -v
+    git remote add origin <URL>
+    git remote set-url origin <URL>
+    git push -u origin main
+    git push -u origin feature/login
+
+Docker:
+    docker build -t lms-app .
+    docker images
+    docker run -d -p 7070:8080 --name lms-container lms-app
+    docker ps
+    docker logs lms-container
+    docker stop lms-container
+    docker rm -f lms-container
+    docker login
+    docker tag lms-app <DOCKER_USERNAME>/lms-app:latest
+    docker push <DOCKER_USERNAME>/lms-app:latest
+
+================================================
+FINAL CHECKLIST
+================================================
+
+MAVEN:
+[ ] pom.xml exists
+[ ] mvn clean package succeeds
+[ ] target/<WAR_NAME>.war exists
+
+GIT:
+[ ] .gitignore created
+[ ] git init done if project was NOT cloned
+[ ] correct GitHub remote
+[ ] correct GitHub account authenticated
+[ ] main branch created/selected
+[ ] project pushed
+
+DOCKER:
+[ ] Dockerfile exists in PROJECT ROOT
+[ ] correct WAR path in Dockerfile
+[ ] docker build succeeds
+[ ] container runs
+[ ] host 7070 maps to container 8080
+[ ] http://localhost:7070 works
+[ ] image tagged with Docker Hub username
+[ ] docker push succeeds
+[ ] Docker Hub repository is public if required
+
+END
